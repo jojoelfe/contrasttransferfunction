@@ -2,5 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .contrasttransferfunction import ContrastTransferFunction
-from .frequencyhelper import FrequencyHelper1D
+from contrasttransferfunction.contrasttransferfunction import ContrastTransferFunction
+from contrasttransferfunction.frequencyhelper import FrequencyHelper1D
+
+__all__ = ["ContrastTransferFunction", "FrequencyHelper1D"]

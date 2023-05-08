@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "contrasttransferfunction"
 dynamic = ["version"]
-description = 'Tools to model and estimate the contrast transfer function for transmission electron microscopy data'
+description = "Tools to model and estimate the contrast transfer function for transmission electron microscopy data"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
@@ -63,12 +63,14 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "numpy",
+  "pydantic"
 ]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/contrasttransferfunction tests}"
 style = [
-  "ruff {args:.}",
-  "black --check --diff {args:.}",
+  "ruff {args:.} --fix",
+  "black {args:.}",
 ]
 fmt = [
   "black {args:.}",
