@@ -1,11 +1,16 @@
+import sys
+
 import matplotlib.pyplot as plt
 
 from contrasttransferfunction import ContrastTransferFunction
-from contrasttransferfunction import FrequencyHelper1D as Freq1D
 
-my_ctf = ContrastTransferFunction(pixel_size_A=2.0)
+ctf = ContrastTransferFunction(
+    pixel_size_angstroms=4.24, defocus1_angstroms=8000, defocus2_angstroms=16000, defocus_angle_degrees=30.0
+)
 
-my_freq = Freq1D()
-
-plt.plot(my_freq.spatial_frequency_A, my_ctf.evaluate(my_freq.spatial_frequency_pixels))
+plt.plot(ctf.get_frequency_angstroms_1d(), ctf.get_powerspectrum_1d())
 plt.show()
+
+plt.imshow(ctf.get_powerspectrum_2d())
+plt.show()
+sys.exit()

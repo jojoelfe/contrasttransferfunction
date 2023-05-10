@@ -1,18 +1,26 @@
-from typing import Optional
+from typing import Union, overload
 
 import numpy as np
 from pydantic import BaseModel
 
+from contrasttransferfunction.frequencyhelper import FrequencyHelper
+
+DEFAULT_BOXSIZE = 512
+DEFAULT_DIAGONAL_RADIUS = int(256 * np.sqrt(2.0))
+
 
 class ContrastTransferFunction(BaseModel):
-    defocus1_angstroms: float = 10000.0
-    defocus2_angstroms: float = 10000.0
+    defocus1_angstroms: Union[float, np.ndarray] = 10000.0
+    defocus2_angstroms: Union[float, np.ndarray] = 10000.0
     defocus_angle_degrees: float = 0.0
     additional_phase_shift_degrees: float = 0.0
     voltage_kv: float = 300.0
     spherical_aberration_mm: float = 2.7
     amplitude_contrast: float = 0.07
     pixel_size_angstroms: float = 1.0
+
+    class Config:
+        arbitrary_types_allowed = True
 
     @property
     def defocus1_pixels(self):
@@ -40,7 +48,7 @@ class ContrastTransferFunction(BaseModel):
 
     @property
     def precomputed_amplitude_contrast(self):
-        if np.abs(self.amplitude_contrast - 1.0) < np.finfo(self.amplitude_contrast):
+        if np.abs(self.amplitude_contrast - 1.0) < np.finfo(self.amplitude_contrast).eps:
             return np.pi / 2.0
         else:
             return np.arctan(self.amplitude_contrast / np.sqrt(1.0 - self.amplitude_contrast**2))
@@ -49,14 +57,16 @@ class ContrastTransferFunction(BaseModel):
     def spherical_aberration_pixels(self):
         return (self.spherical_aberration_mm * 1000 * 1000 * 10) / self.pixel_size_angstroms
 
-    def defocus_given_azimuth(self, azimuth):
+    def defocus_given_azimuth(self, azimuth: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         return 0.5 * (
             self.defocus1_pixels
             + self.defocus2_pixels
             + np.cos(2.0 * (azimuth - self.defocus_angle_radians)) * (self.defocus1_pixels - self.defocus2_pixels)
         )
 
-    def phase_shift(self, frequency, azimuth=0.0):
+    def phase_shift(
+        self, frequency: Union[float, np.ndarray], azimuth: Union[float, np.ndarray] = 0.0
+    ) -> Union[float, np.ndarray]:
         return (
             np.pi
             * self.wavelength_pixels
@@ -69,5 +79,39 @@ class ContrastTransferFunction(BaseModel):
             + self.precomputed_amplitude_contrast
         )
 
-    def evaluate(self, frequency: Optional[np.ndarray] = None, azimuth=0.0):
+    @overload
+    def evaluate(self, frequency: float, azimuth: float = 0.0) -> float:
+        ...
+
+    @overload
+    def evaluate(self, frequency: np.ndarray, azimuth: np.ndarray) -> np.ndarray:
+        ...
+
+    @overload
+    def evaluate(self, frequency: float, azimuth: np.ndarray) -> np.ndarray:
+        ...
+
+    @overload
+    def evaluate(self, frequency: np.ndarray) -> np.ndarray:
+        ...
+
+    def evaluate(
+        self, frequency: Union[float, np.ndarray], azimuth: Union[float, np.ndarray] = 0.0
+    ) -> Union[float, np.ndarray]:
         return -np.sin(self.phase_shift(frequency, azimuth))
+
+    def get_powerspectrum_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
+        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+        return self.evaluate(fh.spatial_frequency_pixels) ** 2
+
+    def get_frequency_pixels_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
+        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+        return fh.spatial_frequency_pixels
+
+    def get_frequency_angstroms_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
+        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+        return fh.spatial_frequency_angstroms
+
+    def get_powerspectrum_2d(self, n: int = DEFAULT_BOXSIZE) -> np.ndarray:
+        fh = FrequencyHelper(size=(n, n), pixel_size_angstroms=self.pixel_size_angstroms)
+        return self.evaluate(fh.spatial_frequency_pixels, azimuth=fh.azimuth) ** 2
