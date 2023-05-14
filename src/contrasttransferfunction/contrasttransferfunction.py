@@ -4,12 +4,13 @@ import numpy as np
 from pydantic import BaseModel
 
 from contrasttransferfunction.frequencyhelper import FrequencyHelper
+from contrasttransferfunction.utils import calculate_diagonal_radius
 
 DEFAULT_BOXSIZE = 512
-DEFAULT_DIAGONAL_RADIUS = int(256 * np.sqrt(2.0))
 
 
 class ContrastTransferFunction(BaseModel):
+    # These are the parameters that are used to generate the CTF
     defocus1_angstroms: Union[float, np.ndarray] = 10000.0
     defocus2_angstroms: Union[float, np.ndarray] = 10000.0
     defocus_angle_degrees: float = 0.0
@@ -18,6 +19,9 @@ class ContrastTransferFunction(BaseModel):
     spherical_aberration_mm: float = 2.7
     amplitude_contrast: float = 0.07
     pixel_size_angstroms: float = 1.0
+
+    # These are the parameters used for plotting and fitting
+    box_size: int = DEFAULT_BOXSIZE
 
     class Config:
         arbitrary_types_allowed = True
@@ -100,18 +104,26 @@ class ContrastTransferFunction(BaseModel):
     ) -> Union[float, np.ndarray]:
         return -np.sin(self.phase_shift(frequency, azimuth))
 
-    def get_powerspectrum_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
-        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+    @property
+    def powerspectrum_1d(self) -> np.ndarray:
+        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
+                             pixel_size_angstroms=self.pixel_size_angstroms)
         return self.evaluate(fh.spatial_frequency_pixels) ** 2
 
-    def get_frequency_pixels_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
-        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+    @property
+    def frequency_pixels_1d(self) -> np.ndarray:
+        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
+                             pixel_size_angstroms=self.pixel_size_angstroms)
         return fh.spatial_frequency_pixels
 
-    def get_frequency_angstroms_1d(self, n: int = DEFAULT_DIAGONAL_RADIUS) -> np.ndarray:
-        fh = FrequencyHelper(size=n, pixel_size_angstroms=self.pixel_size_angstroms)
+    @property
+    def frequency_angstroms_1d(self) -> np.ndarray:
+        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
+                             pixel_size_angstroms=self.pixel_size_angstroms)
         return fh.spatial_frequency_angstroms
 
-    def get_powerspectrum_2d(self, n: int = DEFAULT_BOXSIZE) -> np.ndarray:
-        fh = FrequencyHelper(size=(n, n), pixel_size_angstroms=self.pixel_size_angstroms)
+    @property
+    def powerspectrum_2d(self) -> np.ndarray:
+        fh = FrequencyHelper(size=(self.box_size, self.box_size),
+                             pixel_size_angstroms=self.pixel_size_angstroms)
         return self.evaluate(fh.spatial_frequency_pixels, azimuth=fh.azimuth) ** 2
