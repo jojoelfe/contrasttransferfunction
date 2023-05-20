@@ -3,7 +3,7 @@ from typing import Optional, Union
 import numpy as np
 from pydantic import BaseModel, validator
 
-from contrasttransferfunction.utils import calculate_diagonal_radius
+from contrasttransferfunction.utils import calculate_diagonal_radius, distance_from_center_array
 
 
 class FrequencyHelper(BaseModel):
@@ -28,11 +28,7 @@ class FrequencyHelper(BaseModel):
         if type(self.size) is int:
             return np.linspace(0, 0.5 * np.sqrt(2.0), self.size)
         elif type(self.size) is tuple and len(self.size) == 2:
-            x_inds, y_inds = np.ogrid[: self.size[1], : self.size[0]]
-            mid_x, mid_y = (np.array(self.size[::-1]) - 1) / float(2)
-            distance_center = ((y_inds - mid_y) ** 2 + (x_inds - mid_x) ** 2) ** 0.5
-
-            return distance_center / (self.size[0] - 1)
+            return distance_from_center_array(self.size[0]) / (self.size[0] - 1)
         else:
             raise NotImplementedError
 

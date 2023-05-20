@@ -26,7 +26,8 @@ classifiers = [
 ]
 dependencies = [
   "numpy",
-  "pydantic"
+  "pydantic",
+  "scipy"
 ]
 
 [project.urls]
@@ -66,6 +67,7 @@ dependencies = [
   "numpy",
   "pydantic",
   "pytest",
+  "scipy"
 ]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/contrasttransferfunction tests}"

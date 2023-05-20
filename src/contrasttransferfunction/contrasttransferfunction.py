@@ -106,24 +106,26 @@ class ContrastTransferFunction(BaseModel):
 
     @property
     def powerspectrum_1d(self) -> np.ndarray:
-        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
-                             pixel_size_angstroms=self.pixel_size_angstroms)
+        fh = FrequencyHelper(
+            size=calculate_diagonal_radius(self.box_size), pixel_size_angstroms=self.pixel_size_angstroms
+        )
         return self.evaluate(fh.spatial_frequency_pixels) ** 2
 
     @property
     def frequency_pixels_1d(self) -> np.ndarray:
-        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
-                             pixel_size_angstroms=self.pixel_size_angstroms)
+        fh = FrequencyHelper(
+            size=calculate_diagonal_radius(self.box_size), pixel_size_angstroms=self.pixel_size_angstroms
+        )
         return fh.spatial_frequency_pixels
 
     @property
     def frequency_angstroms_1d(self) -> np.ndarray:
-        fh = FrequencyHelper(size=calculate_diagonal_radius(self.box_size),
-                             pixel_size_angstroms=self.pixel_size_angstroms)
+        fh = FrequencyHelper(
+            size=calculate_diagonal_radius(self.box_size), pixel_size_angstroms=self.pixel_size_angstroms
+        )
         return fh.spatial_frequency_angstroms
 
     @property
     def powerspectrum_2d(self) -> np.ndarray:
-        fh = FrequencyHelper(size=(self.box_size, self.box_size),
-                             pixel_size_angstroms=self.pixel_size_angstroms)
+        fh = FrequencyHelper(size=(self.box_size, self.box_size), pixel_size_angstroms=self.pixel_size_angstroms)
         return self.evaluate(fh.spatial_frequency_pixels, azimuth=fh.azimuth) ** 2
