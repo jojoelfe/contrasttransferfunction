@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import mean, uniform_filter
 
-from contrasttransferfunction.utils import distance_from_center_array
+from contrasttransferfunction.utils import distance_from_center_array, calculate_diagonal_radius
 
 # These functions aim to replicate ctffinds preprocessing of the amplitude spectrum
 
@@ -73,11 +73,11 @@ def cosine_highpass(spectrum: np.ndarray, pixel_size_angstroms: float = 1.0) -> 
 def radial_average(spectrum: np.ndarray) -> np.ndarray:
     distance_from_center = distance_from_center_array(spectrum.shape[0])
     bins = np.around(distance_from_center).astype(np.int32)
-    return mean(spectrum, labels=bins, index=np.arange(1, bins.max() + 1))
+    return mean(spectrum, labels=bins, index=np.arange(1, calculate_diagonal_radius(spectrum.shape[0])+1))
 
 
-def ctffind_1d_preproc(spectrum: np.ndarray, pixel_size_angstroms) -> np.ndarray:
-    spectrum = downscale_spectrum(spectrum, 512)
+def ctffind_1d_preproc(spectrum: np.ndarray, pixel_size_angstroms, box_size=512) -> np.ndarray:
+    spectrum = downscale_spectrum(spectrum, box_size)
     spectrum = adjust_central_cross(spectrum)
     spectrum = subtract_baseline(spectrum)
     spectrum = cosine_highpass(spectrum, pixel_size_angstroms=pixel_size_angstroms)

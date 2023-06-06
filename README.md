@@ -24,6 +24,25 @@ Tools to model and estimate the contrast transfer function for transmission elec
 pip install contrasttransferfunction
 ```
 
+## Examples
+
+### Plot 1D powerspectrum
+
+```
+from contrasttransferfunction import ContrastTransferFunction
+import matplotlib.pyplot as plt
+
+myctf = ContrastTransferFunction(
+    defocus1_angstroms = 8000,
+    pixel_size_angstroms = 2.3
+)
+
+plt.plot(myctf.frequency_angstroms_1d, myctf.powerspectrum_1d)
+plt.gca().xaxis.set_major_formatter(lambda x, pos: f"{1/x:.1f}Å")
+plt.xlabel("Spatial resultion (A)")
+```
+
+
 ## License
 
 `contrasttransferfunction` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

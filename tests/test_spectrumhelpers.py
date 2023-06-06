@@ -20,3 +20,9 @@ def test_radial_average():
     expected_result = np.array([8.5, 8.5])
     # Check that result matches expected result
     np.testing.assert_array_equal(radial_avg, expected_result)
+
+def test_radial_average_of_2d_powerspectrum():
+    ctf = ContrastTransferFunction(box_size=1024,defocus=10000,pixel_size_angstroms=4.0)
+    radial_avg = radial_average(ctf.powerspectrum_2d)
+    assert np.allclose(radial_avg, ctf.powerspectrum_1d,atol=0.05)
+

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from contrasttransferfunction.frequencyhelper import FrequencyHelper
 from contrasttransferfunction.utils import calculate_diagonal_radius
+from contrasttransferfunction.spectrumhelpers import ctffind_1d_preproc
 
 DEFAULT_BOXSIZE = 512
 

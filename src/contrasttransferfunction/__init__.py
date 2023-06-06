@@ -4,5 +4,6 @@
 
 from contrasttransferfunction.contrasttransferfunction import ContrastTransferFunction
 from contrasttransferfunction.frequencyhelper import FrequencyHelper
+from contrasttransferfunction.ctffit import CtfFit
 
-__all__ = ["ContrastTransferFunction", "FrequencyHelper"]
+__all__ = ["ContrastTransferFunction", "FrequencyHelper", "CtfFit"]

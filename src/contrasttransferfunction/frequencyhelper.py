@@ -26,7 +26,7 @@ class FrequencyHelper(BaseModel):
     @property
     def spatial_frequency_pixels(self) -> np.ndarray:
         if type(self.size) is int:
-            return np.linspace(0, 0.5 * np.sqrt(2.0), self.size)
+            return np.linspace(1/(self.size * 2.0), 0.5 * np.sqrt(2.0), self.size)
         elif type(self.size) is tuple and len(self.size) == 2:
             return distance_from_center_array(self.size[0]) / (self.size[0] - 1)
         else:
