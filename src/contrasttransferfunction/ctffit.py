@@ -1,20 +1,19 @@
 from pydantic import BaseModel
 import numpy as np
 from contrasttransferfunction import ContrastTransferFunction
-from contrasttransferfunction.spectrumhelpers import ctffind_1d_preproc
+from contrasttransferfunction.spectrumhelpers import ctffind_preproc, radial_average
 from contrasttransferfunction.utils import calculate_diagonal_radius
 
 DEFAULT_BOXSIZE=512
 
 class CtfFit(BaseModel):
+    spectrum: np.ndarray
     ctf: ContrastTransferFunction
-    cross_correlation: np.ndarray
+    cross_correlation: float
     ctf_accuracy: float
-    cross_correlation_defocus: np.ndarray
-    comparison_array: np.ndarray
-    fit_index: int
-    defocus: np.ndarray = None
-    proc_spectrum: np.ndarray = None
+    cross_correlation_array: np.ndarray
+    defocus_array: np.ndarray
+    
 
     class Config:
         arbitrary_types_allowed = True
@@ -25,7 +24,8 @@ class CtfFit(BaseModel):
     @classmethod
     def fit_1d(cls, spectrum:np.ndarray, pixel_size_angstrom: float, low_defocus:float=3000, high_defocus:float=30000):
         if spectrum.ndim == 2:
-            spectrum_1d = ctffind_1d_preproc(spectrum, pixel_size_angstroms=pixel_size_angstrom)
+            spectrum  = ctffind_preproc(spectrum, pixel_size_angstroms=pixel_size_angstrom)
+            spectrum_1d = radial_average(spectrum)
         elif spectrum.ndim == 1:
             spectrum_1d = spectrum
         else:
@@ -61,17 +61,20 @@ class CtfFit(BaseModel):
         fit_accuracy = max(left_delta,right_delta)
         return(
             cls(
+                spectrum=spectrum,
                 ctf=ContrastTransferFunction(
                     defocus1_angstroms=fit_defocus,
                     defocus2_angstroms=fit_defocus,
                     pixel_size_angstroms=pixel_size_angstrom
                 ),
-                cross_correlation=correlation,
-                cross_correlation_defocus=defocus[:,0],
+                cross_correlation=correlation[fit_index],
                 ctf_accuracy=fit_accuracy,
-                fit_index=fit_index,
-                comparison_array=comparison_array,
-                defocus=defocus,
-                proc_spectrum=spectrum_1d
+                cross_correlation_array=correlation,
+                defocus_array=defocus[:,0]
             )
         )
+    
+    def create_overlay(self) -> np.ndarray:
+        overlay = self.spectrum.copy()
+        overlay[overlay.shape[0]//2:,:]  = self.ctf.powerspectrum_2d[overlay.shape[0]//2:,:]
+        return(overlay)

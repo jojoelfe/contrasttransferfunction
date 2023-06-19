@@ -76,9 +76,9 @@ def radial_average(spectrum: np.ndarray) -> np.ndarray:
     return mean(spectrum, labels=bins, index=np.arange(1, calculate_diagonal_radius(spectrum.shape[0])+1))
 
 
-def ctffind_1d_preproc(spectrum: np.ndarray, pixel_size_angstroms, box_size=512) -> np.ndarray:
+def ctffind_preproc(spectrum: np.ndarray, pixel_size_angstroms, box_size=512) -> np.ndarray:
     spectrum = downscale_spectrum(spectrum, box_size)
     spectrum = adjust_central_cross(spectrum)
     spectrum = subtract_baseline(spectrum)
     spectrum = cosine_highpass(spectrum, pixel_size_angstroms=pixel_size_angstroms)
-    return radial_average(spectrum)
+    return spectrum
