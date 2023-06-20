@@ -44,7 +44,7 @@ class ContrastTransferFunction(BaseModel):
 
     @property
     def wavelength_angstroms(self):
-        return 12.2643247 / np.sqrt(self.voltage_kv * 1000 + 0.978466e-6 * (self.voltage_kv * 1000) ** 2)
+        return 12.2639 / np.sqrt(self.voltage_kv * 1000 + 0.97845e-6 * (self.voltage_kv * 1000) ** 2)
 
     @property
     def wavelength_pixels(self):
