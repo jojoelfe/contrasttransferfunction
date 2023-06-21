@@ -22,7 +22,7 @@ class CtfFit(BaseModel):
     
     
     @classmethod
-    def fit_1d(cls, spectrum:np.ndarray, pixel_size_angstrom: float, low_defocus:float=3000, high_defocus:float=30000):
+    def fit_1d(cls, spectrum:np.ndarray, pixel_size_angstrom: float, low_defocus:float=3000, high_defocus:float=30000,**kwargs):
         if spectrum.ndim == 2:
             spectrum  = ctffind_preproc(spectrum, pixel_size_angstroms=pixel_size_angstrom)
             spectrum_1d = radial_average(spectrum)
@@ -39,7 +39,7 @@ class CtfFit(BaseModel):
         defocus = np.tile(defocus,(calculate_diagonal_radius(DEFAULT_BOXSIZE),1))
         defocus = np.transpose(defocus)
 
-        my_ctf = ContrastTransferFunction(pixel_size_angstroms=pixel_size_angstrom, defocus1_angstroms=defocus, defocus2_angstroms=defocus)
+        my_ctf = ContrastTransferFunction(pixel_size_angstroms=pixel_size_angstrom, defocus1_angstroms=defocus, defocus2_angstroms=defocus,**kwargs)
 
         frequency = np.tile(my_ctf.frequency_pixels_1d,(512,1))
 
