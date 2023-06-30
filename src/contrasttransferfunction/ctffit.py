@@ -7,12 +7,13 @@ from contrasttransferfunction.utils import calculate_diagonal_radius
 DEFAULT_BOXSIZE=512
 
 class CtfFit(BaseModel):
-    spectrum: np.ndarray
+    #spectrum: np.ndarray
     ctf: ContrastTransferFunction
     cross_correlation: float
     ctf_accuracy: float
-    cross_correlation_array: np.ndarray
-    defocus_array: np.ndarray
+    median_cc: float
+    #cross_correlation_array: np.ndarray
+    #defocus_array: np.ndarray
     
 
     class Config:
@@ -22,7 +23,7 @@ class CtfFit(BaseModel):
     
     
     @classmethod
-    def fit_1d(cls, spectrum:np.ndarray, pixel_size_angstrom: float, low_defocus:float=3000, high_defocus:float=30000,**kwargs):
+    def fit_1d(cls, spectrum:np.ndarray, pixel_size_angstrom: float, low_defocus:float=3000, high_defocus:float=120000,**kwargs):
         if spectrum.ndim == 2:
             spectrum  = ctffind_preproc(spectrum, pixel_size_angstroms=pixel_size_angstrom)
             spectrum_1d = radial_average(spectrum)
@@ -56,12 +57,12 @@ class CtfFit(BaseModel):
         left_delta = right_delta = 0.0
         if fit_index > 0:
             left_delta = np.abs(fit_defocus - defocus[fit_index-1,0])
-        if fit_index < correlation.shape[0]:
+        if fit_index < correlation.shape[0]-1:
             right_delta = np.abs(fit_defocus - defocus[fit_index+1,0])
         fit_accuracy = max(left_delta,right_delta)
         return(
             cls(
-                spectrum=spectrum,
+                #spectrum=spectrum,
                 ctf=ContrastTransferFunction(
                     defocus1_angstroms=fit_defocus,
                     defocus2_angstroms=fit_defocus,
@@ -69,8 +70,9 @@ class CtfFit(BaseModel):
                 ),
                 cross_correlation=correlation[fit_index],
                 ctf_accuracy=fit_accuracy,
-                cross_correlation_array=correlation,
-                defocus_array=defocus[:,0]
+                median_cc=np.median(correlation),                
+                #cross_correlation_array=correlation,
+                #defocus_array=defocus[:,0]
             )
         )
     
